@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pac-reasoning"
+version = "1.0.0"
+description = "PAC reasoning: efficient reasoning with a provable bound on the performance loss"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "tqdm",
+]
+
+[project.urls]
+Repository = "https://github.com/Jianguo99/PAC-Reasoning"
+Paper = "https://arxiv.org/abs/2510.09133"
+
+[project.optional-dependencies]
+# Generating answers, grading them and computing the uncertainty scores / semantic loss.
+experiments = [
+    "datasets",
+    "openai>=1.0",
+    "vllm>=0.10,<0.11",  # tested with 0.10.1
+    "latex2sympy2",
+    "sympy",
+    "word2number",
+    "mpmath",
+]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ["pac_reasoning*"]

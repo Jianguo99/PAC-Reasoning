@@ -5,15 +5,25 @@
 
 Official code for **PAC Reasoning** (NeurIPS 2026) by Hao Zeng, Jianguo Huang, Bingyi Jing, Hongxin Wei and Bo An.
 
-Large reasoning models are accurate but expensive. PAC reasoning answers each query with a cheap
-**non-thinking** model first, and calls the **thinking** model only when the non-thinking answer
-looks uncertain. The switching threshold is calibrated with an upper confidence bound on the
-performance loss, so that the loss relative to always thinking stays below a user-chosen tolerance
-`ε` with probability at least `1 − α`.
+Large reasoning models are accurate but expensive. PAC Reasoning answers each query with a cheap
+non-thinking model first, and calls the thinking model only when the non-thinking answer looks
+uncertain. The switching threshold is calibrated on an upper confidence bound of the performance
+loss, so that the resulting model is PAC efficient (Definition 2.1 below).
 
-<p align="center">
-  <em>non-thinking answer if U(x) &lt; û, otherwise thinking answer, &nbsp; û = max{u : UCB<sub>α</sub>(u) ≤ ε}</em>
-</p>
+## PAC efficient model
+
+Let $f$ be the thinking model, $\tilde f$ the non-thinking model, and $\hat f$ the composite model
+built by PAC Reasoning.
+
+**Definition 2.1** ($(\epsilon, \alpha)$-PAC efficient). An LRM $\hat f$ is called an
+$(\epsilon, \alpha)$-probably approximately correct (PAC) efficient model, if for error tolerance
+$\epsilon > 0$ and confidence level $\alpha \in (0, 1)$, it satisfies
+
+$$\mathbb{P}\big(R(\hat f) \le \epsilon\big) \ge 1 - \alpha,$$
+
+where $R(\hat f) = \mathbb{E}_{x \sim \mathcal{P}}\big[\ell(\hat f(x), f(x))\big]$ is the risk function,
+$\ell(\cdot, \cdot)$ is a loss function, and $x$ denotes an input prompt drawn from the underlying
+test sample distribution $\mathcal{P}$.
 
 ## Installation
 
@@ -28,23 +38,23 @@ The experiments were run with Python 3.11 and vLLM 0.10.1.
 ## Quick start
 
 The algorithm only needs, for each calibration query, an uncertainty score `U` of the non-thinking
-answer and the loss `l` of keeping that answer instead of the thinking answer.
+answer and the loss `ℓ` of that answer relative to the thinking model (see [Definition 2.1](#pac-efficient-model)).
 
 ```python
 import numpy as np
 from pac_reasoning import binary_loss, pac_calibrate
 
 # calibration data: correctness of both models and the non-thinking model's uncertainty
-loss = binary_loss(thinking_correct, nonthinking_correct)   # 1 if only the thinking model is right
+loss = binary_loss(thinking_correct, nonthinking_correct)   # 1{non-thinking wrong} * 1{thinking right}
 calib = pac_calibrate(loss, uncertainty, epsilon=0.03, alpha=0.05, pi=0.5, rng=0)
 
 # deployment: call the thinking model only where the non-thinking answer is uncertain
 use_thinking = calib.route(new_uncertainty)                 # boolean mask, U >= threshold
 ```
 
-For open-ended tasks use `semantic_loss(thinking_embeddings, nonthinking_embeddings)`
-(`1 − cosine similarity`). `examples/quickstart.py` and `examples/quickstart.ipynb` run the full
-calibrate-and-evaluate loop on synthetic data.
+For open-ended tasks use the semantic cosine distance,
+`semantic_loss(thinking_embeddings, nonthinking_embeddings)`. `examples/quickstart.py` and
+`examples/quickstart.ipynb` run the full calibrate-and-evaluate loop on synthetic data.
 
 ## Reproducing the paper
 
@@ -101,7 +111,8 @@ bash scripts/reproduce/scores.sh
   generation (`--score logits`; `--score logprob` uses the mean log-probability instead).
 * **Verbalized score** (black-box): the non-thinking model rates its own answer ten times;
   the score is `1 −` the mean stated probability.
-* **Semantic loss**: `1 − cos` between Qwen3-Embedding-4B embeddings of the two answers.
+* **Semantic loss**: the semantic cosine distance `1 − cos` between Qwen3-Embedding-4B embeddings of
+  the thinking and non-thinking answers.
 
 ### 3. Results
 

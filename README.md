@@ -2,6 +2,7 @@
 
 [![arXiv](https://img.shields.io/badge/arXiv-2510.09133-b31b1b.svg)](https://arxiv.org/abs/2510.09133)
 [![NeurIPS 2026](https://img.shields.io/badge/NeurIPS-2026-4b44ce.svg)](https://openreview.net/forum?id=52BT1Jih6O)
+[![Project Page](https://img.shields.io/badge/Project-Page-2ea44f.svg)](https://zenghao-stat.github.io/pages/pac_reasoning/)
 
 Official code for **PAC Reasoning** (NeurIPS 2026) by Hao Zeng, Jianguo Huang, Bingyi Jing, Hongxin Wei and Bo An.
 
